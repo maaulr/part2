@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react'
-import axios from 'axios'
+// import axios from 'axios'
+import phonebookService from './services'
 
-const PhonebookNames = ({persons}) => {
+const PhonebookNames = ({persons, handleDelete}) => {
     return (
         <div>
             {persons.map(person=>
-                <p key={person.name}>{person.name} {person.number}</p>    
+                <p key={person.name}>{person.name} {person.number} <button onClick={()=>handleDelete(person.id)}>delete</button></p>    
             )}
         </div>
     )
@@ -18,9 +19,13 @@ const App = () => {
   const [ newFilter, setNewFilter] = useState('')
 
   useEffect(()=>{
-    axios
-      .get('http://localhost:3001/persons')
-      .then(response=>setPersons(response.data))
+    // axios
+    //   .get('http://localhost:3001/persons')
+    //   .then(response=>setPersons(response.data))
+    // setPersons(phonebookService.getAll())
+    phonebookService
+      .getAll()
+      .then(persons=>setPersons(persons))
   }, [])
 
   const handleAddName = (event) => {
@@ -31,10 +36,21 @@ const App = () => {
         alert(`${newName} is already added to phonebook`)
     } else {
         const new_person = { name: newName, number: newNumber }
-        setPersons(persons.concat(new_person))
+        const res = phonebookService.addPerson(new_person)
+        res.then(newPerson=>setPersons(persons.concat(newPerson)))
+        // setPersons(persons.concat(res))
         setNewName('')
         setNewNumber('')
     }
+  }
+
+  const handleDeleteName = (id) => {
+    const PersonToDelete = persons.find(person=>person.id === id)
+    const indexPersonDelete = persons.indexOf(PersonToDelete)
+    const res = phonebookService.deletePerson(id)
+    const newPersons = [...persons]
+    newPersons.splice(indexPersonDelete, 1)
+    setPersons(newPersons)
   }
 
   const handleFormNameChange = (event) => {
@@ -67,7 +83,7 @@ const App = () => {
       </form>
       <h2>Numbers</h2>
       filter: <input value={newFilter} onChange={handleFilterChange}/>
-      <PhonebookNames persons={filteredPerson}/>
+      <PhonebookNames persons={filteredPerson} handleDelete={handleDeleteName}/>
     </div>
   )
 }
