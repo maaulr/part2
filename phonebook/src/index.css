@@ -11,3 +11,13 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.alert {
+  color: lime;
+  font-style: italic;
+}
+
+.error {
+  color: salmon;
+  font-style: italic;
+}

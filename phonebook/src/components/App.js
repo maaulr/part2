@@ -11,11 +11,28 @@ const PhonebookNames = ({persons, handleDelete}) => {
     )
 }
 
+const Notification = ({message}) => {
+  if (message.type === 'alert') {
+    return (
+      <div className="alert">
+        {message.text}
+      </div>
+    )
+  } else {
+    return (
+      <div className="error">
+        {message.text}
+      </div>
+    )
+  }
+}
+
 const App = () => {
   const [ persons, setPersons] = useState([])
   const [ newName, setNewName ] = useState('')
   const [ newNumber, setNewNumber] = useState('')
   const [ newFilter, setNewFilter] = useState('')
+  const [ notification, setNotification] = useState({})
 
   useEffect(()=>{
     phonebookService
@@ -36,12 +53,16 @@ const App = () => {
           res.then(updatedPerson=>{
             updatedPhonebook[indexPersonUpdate].number = updatedPerson.number
             setPersons(updatedPhonebook)
+            setNotification({text:`${updatePerson[0].name} updated.`, type:'alert'})
+            setTimeout(()=>setNotification({}), 3000)
           })
         } else {}
     } else {
         const new_person = { name: newName, number: newNumber }
         const res = phonebookService.addPerson(new_person)
         res.then(newPerson=>setPersons(persons.concat(newPerson)))
+        setNotification({text:`${new_person.name} added.`, type:'alert'})
+        setTimeout(()=>setNotification({}), 3000)
     }
     setNewName('')
     setNewNumber('')
@@ -52,9 +73,15 @@ const App = () => {
     const indexPersonDelete = persons.indexOf(PersonToDelete)
     if (window.confirm(`Delete ${PersonToDelete.name}?`)){
       const res = phonebookService.deletePerson(id)
+      res.catch(error=>{
+        setNotification({text:`something wrong / data does not exist.`, type:'error'})
+        setTimeout(()=>setNotification({}), 3000)
+      })
       const newPersons = [...persons]
       newPersons.splice(indexPersonDelete, 1)
       setPersons(newPersons)
+      setNotification({text:`${PersonToDelete.name} deleted.`, type:'alert'})
+      setTimeout(()=>setNotification({}), 5000)
     }
     setNewName('')
     setNewNumber('')
@@ -79,6 +106,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={notification}/>
       <form onSubmit={handleAddName}>
         <div>
           name: <input value={newName} onChange={handleFormNameChange}/><br/>
