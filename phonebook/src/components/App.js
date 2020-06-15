@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-// import axios from 'axios'
 import phonebookService from './services'
 
 const PhonebookNames = ({persons, handleDelete}) => {
@@ -19,10 +18,6 @@ const App = () => {
   const [ newFilter, setNewFilter] = useState('')
 
   useEffect(()=>{
-    // axios
-    //   .get('http://localhost:3001/persons')
-    //   .then(response=>setPersons(response.data))
-    // setPersons(phonebookService.getAll())
     phonebookService
       .getAll()
       .then(persons=>setPersons(persons))
@@ -33,24 +28,36 @@ const App = () => {
     const personExist = persons.filter((person)=>person.name===newName)
     
     if (personExist.length>0){
-        alert(`${newName} is already added to phonebook`)
+        if (window.confirm(`${newName} is already added to phonebook, replace the old number with new one?`)){
+          const indexPersonUpdate = persons.indexOf(personExist[0])
+          const updatedPhonebook = [...persons]
+          const updatePerson = { name: personExist[0].name, number: newNumber }
+          const res = phonebookService.updatePerson(personExist[0].id, updatePerson)
+          res.then(updatedPerson=>{
+            updatedPhonebook[indexPersonUpdate].number = updatedPerson.number
+            setPersons(updatedPhonebook)
+          })
+        } else {}
     } else {
         const new_person = { name: newName, number: newNumber }
         const res = phonebookService.addPerson(new_person)
         res.then(newPerson=>setPersons(persons.concat(newPerson)))
-        // setPersons(persons.concat(res))
-        setNewName('')
-        setNewNumber('')
     }
+    setNewName('')
+    setNewNumber('')
   }
 
   const handleDeleteName = (id) => {
     const PersonToDelete = persons.find(person=>person.id === id)
     const indexPersonDelete = persons.indexOf(PersonToDelete)
-    const res = phonebookService.deletePerson(id)
-    const newPersons = [...persons]
-    newPersons.splice(indexPersonDelete, 1)
-    setPersons(newPersons)
+    if (window.confirm(`Delete ${PersonToDelete.name}?`)){
+      const res = phonebookService.deletePerson(id)
+      const newPersons = [...persons]
+      newPersons.splice(indexPersonDelete, 1)
+      setPersons(newPersons)
+    }
+    setNewName('')
+    setNewNumber('')
   }
 
   const handleFormNameChange = (event) => {
