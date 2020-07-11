@@ -56,7 +56,9 @@ const App = () => {
             setNotification({text:`${updatePerson[0].name} updated.`, type:'alert'})
             setTimeout(()=>setNotification({}), 3000)
           })
-        } else {}
+        } else { 
+          // user dont want to update number
+        }
     } else {
         const new_person = { name: newName, number: newNumber }
         const res = phonebookService.addPerson(new_person)
